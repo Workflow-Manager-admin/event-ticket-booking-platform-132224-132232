@@ -1,5 +1,5 @@
 import pytest
-from app import app as flask_app
+from app import create_app
 from app.models import db
 
 # Utilities to help with authentication headers etc.
@@ -8,14 +8,22 @@ def auth_header(token):
 
 @pytest.fixture
 def app():
-    flask_app.config["TESTING"] = True
-    flask_app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
-    flask_app.config["JWT_SECRET_KEY"] = "test-secret"
-    with flask_app.app_context():
+    """
+    Creates a Flask app instance in testing mode, with SQLite in-memory DB.
+    """
+    test_config = {
+        "TESTING": True,
+        "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+        "JWT_SECRET_KEY": "test-secret",
+        "PROPAGATE_EXCEPTIONS": True,
+        "SQLALCHEMY_TRACK_MODIFICATIONS": False
+    }
+    app = create_app(test_config)
+    with app.app_context():
         db.create_all()
-    yield flask_app
+    yield app
     # Clean db
-    with flask_app.app_context():
+    with app.app_context():
         db.session.remove()
         db.drop_all()
 
