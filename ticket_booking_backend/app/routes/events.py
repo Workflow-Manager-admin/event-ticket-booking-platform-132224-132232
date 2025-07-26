@@ -3,8 +3,20 @@ from flask import request
 from flask_smorest import Blueprint, abort
 from flask_jwt_extended import jwt_required
 from app.models import db, Event
+from datetime import datetime
 
 blp = Blueprint("Events", "events", url_prefix="/events", description="Events CRUD endpoints")
+
+def parse_iso_date(date_str):
+    """
+    Helper to safely convert an ISO string to a datetime object, or abort with 400 if invalid.
+    """
+    if not isinstance(date_str, str):
+        abort(400, message="Date must be a valid ISO8601 string")
+    try:
+        return datetime.fromisoformat(date_str)
+    except Exception:
+        abort(400, message="Malformed date format. Should be ISO format (e.g. 2024-06-01T12:00:00).")
 
 # PUBLIC_INTERFACE
 @blp.route("/")
@@ -24,7 +36,12 @@ class EventList(MethodView):
         data = request.get_json()
         if not data or not all(k in data for k in ["title", "date"]):
             abort(400, message="Title and date are required")
-        event = Event(title=data["title"], description=data.get("description"), date=data["date"])
+        date_dt = parse_iso_date(data["date"])
+        event = Event(
+            title=data["title"],
+            description=data.get("description"),
+            date=date_dt
+        )
         db.session.add(event)
         db.session.commit()
         return {
@@ -60,7 +77,7 @@ class EventDetail(MethodView):
         if "description" in data:
             event.description = data["description"]
         if "date" in data:
-            event.date = data["date"]
+            event.date = parse_iso_date(data["date"])
         db.session.commit()
         return {
             "id": event.id,

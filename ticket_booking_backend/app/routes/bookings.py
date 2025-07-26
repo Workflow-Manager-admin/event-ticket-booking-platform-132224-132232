@@ -36,7 +36,7 @@ class BookingList(MethodView):
         if ticket.is_booked:
             abort(409, message="Ticket is already booked")
 
-        # Book the ticket
+        # Book the ticket (Booking.booked_at is auto-datetime)
         booking = Booking(user_id=user_id, ticket_id=ticket_id)
         ticket.is_booked = True
         ticket.booking_id = booking.id

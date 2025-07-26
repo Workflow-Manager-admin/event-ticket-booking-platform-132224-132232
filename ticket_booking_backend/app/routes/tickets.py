@@ -28,6 +28,7 @@ class TicketList(MethodView):
         event = Event.query.get(data["event_id"])
         if not event:
             abort(404, message="Event does not exist")
+        # No date field expected for Ticket itself, so no conversion necessary here.
         ticket = Ticket(
             event_id=event.id,
             price=data["price"],
