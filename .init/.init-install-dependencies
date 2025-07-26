@@ -1,0 +1,4 @@
+{
+    "command": "source venv/bin/activate && pip install -r requirements.txt",
+    "working_directory": "/home/kavia/workspace/code-generation/event-ticket-booking-platform-132224-132232/ticket_booking_backend"
+}
